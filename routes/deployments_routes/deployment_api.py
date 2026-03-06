@@ -3,6 +3,7 @@ from enum import Enum
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from deployment.deployment_engine import engine, Deployment
 
 router = APIRouter(
@@ -10,7 +11,7 @@ prefix="/deployments"
 )
 
 @router.post("")
-def create_deployment(db_name, username):
+def create_deployment(db_name: str, username: str):
      if db_name.startswith(username):
         with Session(engine) as session:
             spongebob = Deployment(
@@ -32,3 +33,12 @@ def create_deployment(db_name, username):
 class Status(str, Enum):
     create = "CREATE"
     deleted = "DELETED"
+
+
+@router.get("")
+def get_deployment(dep_id: str):
+    stmt = select(Deployment).where(Deployment.id == dep_id)
+    print(stmt)
+    with Session(engine) as session:
+        for row in session.execute(stmt):
+            print(row)
